@@ -1,0 +1,14 @@
+# ワークフロー定義ファイルが変更されたプルリクエストで、actionlint による文法チェックを行う
+name: GitHub Actions lint
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  actions-lint:
+    uses: ryoooosk/reusable-workflows/.github/workflows/github-actions-lint.yml@main

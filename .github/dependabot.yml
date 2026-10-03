@@ -1,0 +1,25 @@
+# npm パッケージと GitHub Actions の更新を、月1回まとめてプルリクエストで知らせる
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    # 公開直後の版は避ける（乗っ取られたパッケージが配布される事故への備え）
+    cooldown:
+      default-days: 7
+    # 自動マージできるパッチ・マイナーだけをまとめる（メジャーは手動で確認するので個別のプルリクエストにする）
+    groups:
+      npm:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]

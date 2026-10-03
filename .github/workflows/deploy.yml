@@ -1,0 +1,42 @@
+# main ブランチの src/ が更新されたら、Apps Script に自動で反映する
+# 使うときだけリポジトリ変数 DEPLOY_ENABLED に true を設定する（未設定なら何もせずスキップ）
+name: Deploy to Apps Script
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "scripts/**"
+      - ".nvmrc"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      # 認証情報を扱うワークフローなので、アクションはタグではなくコミットで固定する（更新は Dependabot が行う）
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: 秘密情報が紛れ込んでいないかチェック
+        run: npm run check:secrets
+
+      # 認証情報を第三者のコードに渡さないよう、npm パッケージ（clasp など）はインストールせずに反映する
+      - name: Apps Script に反映
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+          SCRIPT_ID_MAIN: ${{ secrets.SCRIPT_ID_MAIN }}
+          SCRIPT_ID_SUB: ${{ secrets.SCRIPT_ID_SUB }}
+        run: node scripts/push-ci.mjs

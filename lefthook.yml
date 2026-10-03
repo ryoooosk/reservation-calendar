@@ -1,0 +1,5 @@
+# コミット前に秘密情報チェックを実行する（npm install 時に自動で有効になる）
+pre-commit:
+  commands:
+    check-secrets:
+      run: node scripts/check-secrets.mjs

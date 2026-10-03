@@ -1,0 +1,22 @@
+{
+  "name": "reservation-calendar",
+  "private": true,
+  "description": "予約メールをGeminiで読み取りGoogleカレンダーに自動登録する Google Apps Script",
+  "scripts": {
+    "prepare": "lefthook install",
+    "clasp:config": "node scripts/clasp-config.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "login:main": "clasp login --user main",
+    "login:sub": "clasp login --user sub",
+    "whoami:main": "clasp show-authorized-user --user main",
+    "whoami:sub": "clasp show-authorized-user --user sub",
+    "push": "node scripts/push.mjs"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.4.1",
+    "lefthook": "^2.1.16"
+  },
+  "allowScripts": {
+    "lefthook": false
+  }
+}
