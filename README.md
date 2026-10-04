@@ -61,11 +61,15 @@ reservation-calendar/
 │   ├── notify.js            通知メール
 │   ├── tools.js             テスト・セットアップ用の関数
 │   └── util.js              共通の小道具
+├── test/                    テスト（Node.js で実行。Apps Script には送られない）
+│   ├── helpers/gas.mjs      src/ を読み込み、GmailApp などを偽物に差し替える
+│   └── *.test.mjs           src/ のファイルごとのテスト
 ├── scripts/
 │   ├── clasp-config.mjs     スクリプトIDから .clasp.*.json を作る
 │   ├── push.mjs             各アカウントへ反映（手元のPC用）
 │   ├── push-ci.mjs          各アカウントへ反映（GitHub Actions 用）
-│   └── check-secrets.mjs    秘密情報の混入チェック
+│   ├── check-secrets.mjs    秘密情報の混入チェック
+│   └── test-coverage.mjs    テストとカバレッジの確認（基準値もここ）
 ├── .github/
 │   ├── workflows/           GitHub Actions（上の表を参照）
 │   └── dependabot.yml       依存パッケージの更新通知
@@ -163,6 +167,8 @@ Apps Script エディタの関数選択プルダウンで、次の順に実行�
 
 **コードを変えるとき**は `src/` を編集してコミット・push します。GitHub Actions を設定済みなら自動で反映され、設定していなければ `npm run push` で反映します。
 
+- push の前に `npm run test:coverage` でテストを実行してください。GitHub Actions でも同じ確認を行い、テストが失敗するか、カバレッジ（テストで実行されたコードの割合）が基準を下回ると反映されません
+- 基準値は `scripts/test-coverage.mjs` にあります（行95%・分岐90%・関数95%）。テストを増やしたら引き上げ、下げないようにします
 - ブラウザのApps Scriptエディタでコードを直接編集しないでください。次の push で上書きされて消えます
 - 検索ワードの追加や差出人の除外は、スクリプト プロパティを変えるだけで済みます（コード変更は不要）
 - 予定の通知（リマインダー）は、**メインのカレンダーの「デフォルトの通知」** で設定します。Googleカレンダーの通知はアカウントごとの設定で、サブのスクリプトが付けた通知はサブ側でしか鳴らないためです
@@ -193,6 +199,8 @@ Apps Script エディタの関数選択プルダウンで、次の順に実行�
 | `npm run login:main` / `login:sub` | アカウントごとに clasp へログイン |
 | `npm run whoami:main` / `whoami:sub` | ログイン中のアカウントを確認 |
 | `npm run push` | `src/` を各アカウントのApps Scriptに反映 |
+| `npm test` | テストを実行 |
+| `npm run test:coverage` | テストを実行し、カバレッジが基準を下回っていないか確認（GitHub Actions と同じ確認） |
 | `npm run check:secrets` | 秘密情報の混入チェック（コミット時に lefthook が自動実行） |
 
 ### Apps Script の関数（エディタで実行、`src/tools.js`）
@@ -209,7 +217,8 @@ Apps Script エディタの関数選択プルダウンで、次の順に実行�
 
 | ワークフロー | 内容 |
 | --- | --- |
-| `deploy.yml` | `main` への push で各アカウントへ自動反映（手順7を参照） |
+| `deploy.yml` | `main` への push で、テストに通ったら各アカウントへ自動反映（手順7を参照） |
+| `test.yml` | プルリクエストと `main` への push で、テストとカバレッジの確認 |
 | `secret-scan.yml` | プルリクエストの秘密情報チェック（secretlint） |
 | `github-actions-lint.yml` | ワークフロー定義の文法チェック（actionlint） |
 | `dependabot-auto-merge.yml` | Dependabot の更新のうち、GitHub Actions と npm のパッチ・マイナー更新を自動マージ（[ryoooosk/reusable-workflows](https://github.com/ryoooosk/reusable-workflows) を使用） |
@@ -218,6 +227,6 @@ Dependabot の自動マージを動かすには、リポジトリの「Settings�
 
 1. 「Actions」→「General」の **Allow GitHub Actions to create and approve pull requests** をオン
 2. 「General」の **Allow auto-merge** をオン
-3. 「Rules」→「Rulesets」で、デフォルトブランチに **Require status checks to pass**（`secret-scan` を必須）のルールセットを作る。これが無いと、秘密情報チェックを待たずにマージされます。自分が `main` に直接 push できるよう、Bypass list に Repository admin を入れておきます
+3. 「Rules」→「Rulesets」で、デフォルトブランチに **Require status checks to pass**（`secret-scan` と `test` を必須）のルールセットを作る。これが無いと、秘密情報チェックやテストを待たずにマージされます。自分が `main` に直接 push できるよう、Bypass list に Repository admin を入れておきます
 
 `GitHub Actions lint` はワークフロー定義が変わったプルリクエストでしか動かないので、必須チェックにはしないでください。

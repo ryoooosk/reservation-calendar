@@ -4,6 +4,8 @@
   "description": "予約メールをGeminiで読み取りGoogleカレンダーに自動登録する Google Apps Script",
   "scripts": {
     "prepare": "lefthook install",
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "test:coverage": "node scripts/test-coverage.mjs",
     "clasp:config": "node scripts/clasp-config.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
     "login:main": "clasp login --user main",
