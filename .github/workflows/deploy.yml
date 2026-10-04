@@ -19,7 +19,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # テストに通らないコードは反映しない（このジョブには秘密情報を渡さない）
+  test:
+    if: vars.DEPLOY_ENABLED == 'true'
+    uses: ./.github/workflows/test.yml
+
   deploy:
+    needs: test
     if: vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
