@@ -1,5 +1,4 @@
-# プルリクエストに API キーなどの秘密情報が含まれていないか secretlint でチェックする
-name: Secret scan
+name: CI
 
 on:
   pull_request:
@@ -8,5 +7,8 @@ permissions:
   contents: read
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   secret-scan:
     uses: ryoooosk/reusable-workflows/.github/workflows/secret-scan.yml@main
