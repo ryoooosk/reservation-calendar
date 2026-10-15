@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  secret-scan:
+    uses: ryoooosk/reusable-workflows/.github/workflows/secret-scan.yml@main
+
+  # test.yml には置かない。deploy.yml から呼ばれたときに書き込み権限が足りず、deploy.yml ごと失敗する
+  dependabot-auto-merge:
+    needs: [test, secret-scan]
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    uses: ryoooosk/reusable-workflows/.github/workflows/dependabot-auto-merge.yml@main
+    permissions:
+      contents: write
+      pull-requests: write
