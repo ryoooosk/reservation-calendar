@@ -178,7 +178,7 @@ describe('buildQuery_', () => {
 
     assert.equal(
       env.gas.buildQuery_(2),
-      'newer_than:2d -from:me subject:(予約 OR booking OR ご来店 OR "ご予約 ありがとう") -from:news@example.com -from:ads@example.com',
+      'newer_than:2d subject:(予約 OR booking OR ご来店 OR "ご予約 ありがとう") -from:news@example.com -from:ads@example.com',
     );
   });
 
@@ -186,6 +186,12 @@ describe('buildQuery_', () => {
     const env = loadGas();
     env.CONFIG.SUBJECT_WORDS = ['予約', 'booking'];
 
-    assert.equal(env.gas.buildQuery_(7), 'newer_than:7d -from:me subject:(予約 OR booking)');
+    assert.equal(env.gas.buildQuery_(7), 'newer_than:7d subject:(予約 OR booking)');
+  });
+
+  test('-from:me を含めない（.me ドメインの差出人まで除外されるため）', () => {
+    const env = loadGas();
+
+    assert.ok(!env.gas.buildQuery_(2).includes('-from:me'));
   });
 });
