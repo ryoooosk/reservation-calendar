@@ -81,5 +81,7 @@ function buildQuery_(days) {
     .map(w => (/\s/.test(w) ? `"${w}"` : w))
     .join(' OR ');
   const excludes = getListProp_('EXCLUDE_FROM').map(a => `-from:${a}`).join(' ');
-  return `newer_than:${days}d -from:me subject:(${words}) ${excludes}`.trim();
+  // -from:me は使わない：Gmail が「.me」ドメイン（例: cuepod.me）の差出人まで除外してしまうため。
+  // 自分が送ったメールは run_() の fromMe チェックで除外している
+  return `newer_than:${days}d subject:(${words}) ${excludes}`.trim();
 }
